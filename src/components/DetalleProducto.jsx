@@ -1,65 +1,219 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Alert, Badge } from 'react-bootstrap';
+import { FaArrowLeft, FaStar, FaShoppingCart, FaTag } from 'react-icons/fa';
+import { Helmet } from 'react-helmet-async';
+import { toast } from 'react-toastify';
+import { useProductos } from '../context/ProductosContext';
+import { useCarrito } from '../context/CarritoContext';
+import { Card, PageTitle, ProductImage, ProductPrice, PrimaryButton, SecondaryButton, Spinner } from '../styles/StyledComponents';
 
-const DetalleProducto = () => {//componente para mostrar el detalle de un producto
-const { id } = useParams();//obtiene el id del producto de la url, funciona haciendo uso del hook useParams de react-router-dom que hace que podamos acceder a los parametros de la url definidos en las rutas.
-const [producto, setProducto] = useState(null);//estado para almacenar el detalle del producto
-const [loading, setLoading] = useState(true);//estado para manejar la carga del producto
-const [error, setError] = useState(null);//estado para manejar errores
+const DetalleProducto = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { productos } = useProductos();
+  const { agregarAlCarrito } = useCarrito();
+  const [producto, setProducto] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [cantidad, setCantidad] = useState(1);
 
-useEffect(() => {
+  useEffect(() => {
     if (!id) {
-    setError('ID de producto inválido');
-    setLoading(false);
-    return;//si no hay id muestra error y termina la ejecucion del useEffect
+      setError('ID de producto inválido');
+      setLoading(false);
+      return;
     }
 
-    const controller = new AbortController();//para cancelar la peticion fetch si el componente se desmonta, osea si el usuario navega a otra pagina antes de que la peticion termine.
+    const controller = new AbortController();
 
-    const cargar = async () => { //funcion asincrona para cargar el detalle del producto
-    setLoading(true);//indica que se esta cargando
-    setError(null);//resetea el error
-    try {
-        const res = await fetch(`https://fakestoreapi.com/products/${id}`, { signal: controller.signal });
-        if (!res.ok) throw new Error(`Error en la respuesta (${res.status})`);//si la respuesta no es ok lanza un error
-        const data = await res.json();
-        setProducto(data);//almacena el detalle del producto en el estado
-    } catch (err) {
-        if (err.name === 'AbortError') return; // petición cancelada
-        setError(err.message || 'Error al cargar el producto');//almacena el mensaje de error en el estado
-    } finally {
-        setLoading(false);//indica que ya no se esta cargando
-    }
+    const cargar = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Primero buscar en el contexto (productos ya cargados)
+        const productoLocal = productos.find(p => p.id === parseInt(id));
+        
+        if (productoLocal) {
+          setProducto(productoLocal);
+          setLoading(false);
+          return;
+        }
+
+        // Si no está en el contexto, buscar en la API
+        const res = await fetch(`https://fakestoreapi.com/products/${id}`, { 
+          signal: controller.signal 
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Error en la respuesta (${res.status})`);
+        }
+
+        // Verificar que hay contenido antes de parsear JSON
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('La respuesta no es JSON válido');
+        }
+
+        const text = await res.text();
+        if (!text) {
+          throw new Error('Respuesta vacía del servidor');
+        }
+
+        const data = JSON.parse(text);
+        setProducto(data);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Error cargando producto:', err);
+        setError(err.message || 'Error al cargar el producto');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    cargar();//llama a la funcion para cargar el detalle del producto
+    cargar();
 
     return () => controller.abort();
-}, [id]);
+  }, [id, productos]);
 
-if (loading) return <div>Cargando detalle del producto...</div>;
-if (error) return <div style={{ color: 'crimson' }}>Error: {error}</div>;
-if (!producto) return <div>Producto no encontrado</div>;
+  if (loading) {
+    return (
+      <>
+        <Helmet>
+          <title>Cargando... - Mi Tienda Online</title>
+        </Helmet>
+        <Container className="py-5 text-center">
+          <Spinner />
+          <p className="mt-3">Cargando detalle del producto...</p>
+        </Container>
+      </>
+    );
+  }
 
-return (
+  if (error) {
+    return (
+      <>
+        <Helmet>
+          <title>Error - Mi Tienda Online</title>
+        </Helmet>
+        <Container className="py-5">
+          <Alert variant="danger" className="text-center" style={{ maxWidth: '500px', margin: '0 auto' }}>
+            <h3>Error al cargar producto</h3>
+            <p>{error}</p>
+            <SecondaryButton onClick={() => navigate('/')}>
+              <FaArrowLeft className="me-2" />
+              Volver al Inicio
+            </SecondaryButton>
+          </Alert>
+        </Container>
+      </>
+    );
+  }
+
+  if (!producto) {
+    return (
+      <>
+        <Helmet>
+          <title>Producto no encontrado - Mi Tienda Online</title>
+        </Helmet>
+        <Container className="py-5 text-center">
+          <h3>Producto no encontrado</h3>
+          <SecondaryButton onClick={() => navigate('/')} className="mt-3">
+            <FaArrowLeft className="me-2" />
+            Volver al Inicio
+          </SecondaryButton>
+        </Container>
+      </>
+    );
+  }
+
+  const handleAgregarAlCarrito = () => {
+    const productoConCantidad = {
+      ...producto,
+      cantidad: cantidad
+    };
+    agregarAlCarrito(productoConCantidad);
+    toast.success(`${cantidad} ${cantidad === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
+    setTimeout(() => navigate('/carrito'), 1500);
+  };
+
+  return (
     <>
-    <h2>{producto.title}</h2>
-    <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <img
-        src={producto.image}
-        alt={producto.title}
-        loading="lazy"
-        onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/150?text=No+img'; }}
-        style={{ width: 180, height: 180, objectFit: 'contain', borderRadius: 6, background: '#fff' }}
-        />
-        <div style={{ maxWidth: 600, textAlign: 'left' }}>
-        <p style={{ marginTop: 0 }}>{producto.description}</p>
-        <p><strong>Precio:</strong> ${Number(producto.price).toFixed(2)}</p>
-        {producto.category && <p><em>Categoría:</em> {producto.category}</p>}
-        </div>
-    </div>
+      <Helmet>
+        <title>{producto.title} - Mi Tienda Online</title>
+        <meta name="description" content={producto.description} />
+        <meta name="keywords" content={`${producto.category}, producto, tienda online`} />
+      </Helmet>
+
+      <Container className="py-5" style={{ maxWidth: '1000px' }}>
+        <SecondaryButton onClick={() => navigate('/')} className="mb-4">
+          <FaArrowLeft className="me-2" />
+          Volver
+        </SecondaryButton>
+
+        <Row className="g-4">
+          <Col md={5}>
+            <Card className="text-center">
+              <ProductImage
+                src={producto.image}
+                alt={producto.title}
+                loading="lazy"
+                onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/300?text=No+img'; }}
+                style={{ maxHeight: '400px', objectFit: 'contain', width: '100%' }}
+              />
+            </Card>
+          </Col>
+
+          <Col md={7}>
+            <h2 className="mb-3">{producto.title}</h2>
+            
+            {producto.category && (
+              <div className="mb-3">
+                <Badge bg="primary" className="me-2">
+                  <FaTag className="me-1" />
+                  {producto.category}
+                </Badge>
+                {producto.rating && (
+                  <Badge bg="warning" text="dark">
+                    <FaStar className="me-1" />
+                    {producto.rating.rate} / 5 ({producto.rating.count} reseñas)
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            <Card className="mb-3">
+              <h5 className="text-primary mb-3">Descripción</h5>
+              <p style={{ lineHeight: '1.8' }}>{producto.description}</p>
+            </Card>
+
+            <Card className="bg-light">
+              <ProductPrice>${Number(producto.price).toFixed(2)}</ProductPrice>
+              
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <label className="mb-0">Cantidad:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={cantidad}
+                  onChange={(e) => setCantidad(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="form-control"
+                  style={{ width: '80px' }}
+                />
+              </div>
+
+              <PrimaryButton onClick={handleAgregarAlCarrito} className="w-100">
+                <FaShoppingCart className="me-2" />
+                Agregar al Carrito
+              </PrimaryButton>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </>
-);
+  );
 };
 
 export default DetalleProducto;

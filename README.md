@@ -1,16 +1,46 @@
-# React + Vite
+# ProyectoReactSoledadCaceres
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación de e-commerce desarrollada con React 18 y Vite que cumple con los requerimientos de la entrega final: carrito de compras con Context API, autenticación simulada, CRUD de productos contra MockAPI/FakeStoreAPI, toasts de feedback, diseño responsivo y paginación del catálogo.
 
-Currently, two official plugins are available:
+## Requisitos Previos
+- Node.js 18+
+- pnpm (se recomienda npm `npm install -g pnpm` si no está instalado)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Instalación
+```powershell
+pnpm install
+```
 
-## React Compiler
+## Ejecutar en Desarrollo
+```powershell
+pnpm run dev
+```
+La aplicación estará disponible en `http://localhost:5173/`.
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Scripts Disponibles
+- `pnpm run dev`: inicia Vite en modo desarrollo.
+- `pnpm run build`: genera el build de producción.
+- `pnpm run preview`: sirve el build generado.
+- `pnpm run lint`: ejecuta ESLint.
 
-## Expanding the ESLint configuration
+## Tecnologías Principales
+- React 18 + Vite
+- React Router DOM 6
+- Context API (auth, productos, carrito)
+- React Bootstrap + styled-components
+- React Toastify y React Icons
+- React Helmet Async
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Requerimientos Cubiertos
+1. **Carrito y Autenticación**: rutas protegidas, contexto global, persistencia en `localStorage`.
+2. **CRUD de Productos**: formularios validados, peticiones a FakeStore/MockAPI, modal de confirmación al eliminar.
+3. **Diseño Responsivo**: grid de Bootstrap, componentes adaptativos con styled-components.
+4. **Búsqueda y Paginación**: filtrado en vivo por nombre/categoría y paginación móvil-friendly.
+5. **Preparación para Deploy**: estructura optimizada, manejo de errores y estados de carga.
+
+## Credenciales de Demostración
+- Admin: `admin / admin123`
+- Usuario: `usuario / usuario123`
+
+## Licencia
+Proyecto académico, sin licencia específica.

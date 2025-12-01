@@ -1,67 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
+import { FaStore, FaShieldAlt, FaTruck, FaHeadset } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { Helmet } from 'react-helmet-async';
 import Productos from './Productos';
-import Carrito from './Carrito';
+import { useAuth } from '../context/AuthContext';
+import { useCarrito } from '../context/CarritoContext';
+import { PageTitle, Card } from '../styles/StyledComponents';
 
-const Inicio = ({ estaAutenticado }) => {
-const [carrito, setCarrito] = useState(() => {
-    try {
-    const raw = localStorage.getItem('carrito');
-    return raw ? JSON.parse(raw) : [];
-    } catch {
-    return [];
-    }
-});
+const Inicio = () => {
+  const { estaAutenticado } = useAuth();
+  const { agregarAlCarrito } = useCarrito();
 
-useEffect(() => {
-    try {
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-    } catch (e) {
-    console.error('Error guardando carrito:', e);
-    }
-}, [carrito]);
-
-const agregarAlCarrito = (producto) => {
+  const handleAgregarAlCarrito = (producto) => {
     if (!estaAutenticado) {
-    alert('Debes iniciar sesión para agregar productos.');
-    return;
+      toast.warning('Debes iniciar sesión para agregar productos al carrito');
+      return;
     }
+    agregarAlCarrito(producto);
+  };
 
-    try {
-    setCarrito(prev => {
-        const existe = prev.find(item => item.id === producto.id);
-        if (existe) {
-        return prev.map(item =>
-            item.id === producto.id
-            ? { ...item, cantidad: item.cantidad + Number(producto.cantidad || 1) }
-            : item
-        );
-        }
-        return [
-        ...prev,
-        {
-            id: producto.id,
-            title: producto.title,
-            price: Number(producto.price) || 0,
-            cantidad: Number(producto.cantidad) || 1
-        }
-        ];
-    });
-    } catch (e) {
-    console.error('Error al agregar al carrito:', e);
-    alert('No se pudo agregar el producto. Intenta de nuevo.');
-    }
-};
+  return (
+    <>
+      <Helmet>
+        <title>Inicio - Mi Tienda Online | Las mejores ofertas</title>
+        <meta name="description" content="Bienvenido a Mi Tienda Online. Encuentra los mejores productos con envío rápido y seguro." />
+        <meta name="keywords" content="tienda online, productos, ofertas, compras, e-commerce" />
+      </Helmet>
 
-return (
-    <div style={{ padding: 24 }}>
-    <h1>🏠 Bienvenido a Nuestra Tienda</h1>
-    <p>Explora nuestros productos abajo y agrégalos al carrito.</p>
+      {/* Hero Section */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+        color: 'white',
+        padding: '4rem 0'
+      }}>
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={8} className="mx-auto text-center">
+              <PageTitle style={{ color: 'white', fontSize: '3rem', marginBottom: '1rem' }}>
+                <FaStore className="me-3" />
+                Bienvenido a Mi Tienda Online
+              </PageTitle>
+              <p className="lead" style={{ fontSize: '1.3rem' }}>
+                Descubre productos increíbles con la mejor calidad y precio del mercado
+              </p>
+            </Col>
+          </Row>
+        </Container>
+      </div>
 
-    <Productos onAgregar={agregarAlCarrito} />
+      {/* Features Section */}
+      <Container className="py-5">
+        <Row className="g-4 mb-5">
+          <Col md={3} sm={6}>
+            <Card className="text-center h-100">
+              <FaTruck size={40} className="text-primary mb-3" />
+              <h5>Envío Rápido</h5>
+              <p className="text-muted mb-0">Entrega en 24-48 horas</p>
+            </Card>
+          </Col>
+          <Col md={3} sm={6}>
+            <Card className="text-center h-100">
+              <FaShieldAlt size={40} className="text-success mb-3" />
+              <h5>Compra Segura</h5>
+              <p className="text-muted mb-0">Pago 100% protegido</p>
+            </Card>
+          </Col>
+          <Col md={3} sm={6}>
+            <Card className="text-center h-100">
+              <FaHeadset size={40} className="text-info mb-3" />
+              <h5>Soporte 24/7</h5>
+              <p className="text-muted mb-0">Atención personalizada</p>
+            </Card>
+          </Col>
+          <Col md={3} sm={6}>
+            <Card className="text-center h-100">
+              <FaStore size={40} className="text-warning mb-3" />
+              <h5>Mejor Precio</h5>
+              <p className="text-muted mb-0">Garantía de precio bajo</p>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
 
-    <Carrito carrito={carrito} setCarrito={setCarrito} estaAutenticado={estaAutenticado} />
-    </div>
-);
+      {/* Productos */}
+      <Productos onAgregar={handleAgregarAlCarrito} />
+    </>
+  );
 };
 
 export default Inicio;

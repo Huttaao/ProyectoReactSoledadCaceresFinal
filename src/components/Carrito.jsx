@@ -1,77 +1,171 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { Container, Row, Col, Button, Table, Badge } from 'react-bootstrap';
+import { FaPlus, FaMinus, FaTrash, FaShoppingCart } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { Helmet } from 'react-helmet-async';
+import { useAuth } from '../context/AuthContext';
+import { useCarrito } from '../context/CarritoContext';
+import { Card, DangerButton, SectionTitle } from '../styles/StyledComponents';
 
-//recibe array de items, tiene la funcion para actualizar el carrito y el estado de autenticacion (si es falso no deja modificar el carrito y si es true si)
-const Carrito = ({ carrito, setCarrito, estaAutenticado }) => {
-    //el useEffect guarda el carrito en el localStorage cada vez que cambia el carrito y maneja errores de guardado osea si hay un error al guardar en el localStorage lo muestra por consola como por ejemplo si el almacenamiento esta lleno o si el usuario tiene el modo incognito activado o si el navegador no soporta localStorage, se pone primero el useeffect para que se ejecute al montar el componente y luego cada vez que cambie el carrito asi se mantiene sincronizado con el localStorage
-useEffect(() => {
-    try {
-    localStorage.setItem('carrito', JSON.stringify(carrito));//convierte el carrito a string y lo guarda en el localStorage con la clave 'carrito' se ve como un array de objetos en formato JSON el try sirve para intentar ejecutar el codigo y si hay un error se captura en el catch
-    } catch (e) {
-    console.error('Error guardando carrito:', e);//muestra el error por consola
-    }
-}, [carrito]);//el carrito es la dependencia del useEffect osea que se ejecuta cada vez que cambia el carrito
+// Componente que muestra el carrito de compras usando useContext
+const Carrito = () => {
+  const { estaAutenticado } = useAuth();
+  const { carrito, aumentarCantidad, disminuirCantidad, eliminarDelCarrito, calcularTotal, limpiarCarrito } = useCarrito();
 
+  // Funciones para aumentar, disminuir y eliminar items del carrito
+  const aumentar = (id) => {
+    if (!estaAutenticado) return; // Si no está autenticado no hace nada
+    aumentarCantidad(id);
+  };
 
-
-//funciones para aumentar, disminuir y eliminar items del carrito
-const aumentar = (id) => {
-    if (!estaAutenticado) return;//si no esta autenticado no hace nada
-    setCarrito(prev => prev.map(item => item.id === id ? { ...item, cantidad: item.cantidad + 1 } : item));//busca el item por id y aumenta su cantidad en 1, prev es el estado anterior del carrito funciona como un map que recorre cada item del carrito y si el id del item es igual al id pasado por parametro entonces crea un nuevo objeto con las mismas propiedades pero con la cantidad aumentada en 1, si no es igual simplemente devuelve el item sin cambios.
-};
-
-const disminuir = (id) => {//disminuye la cantidad del item en 1 pero no permite que sea menor a 1
+  const disminuir = (id) => {
     if (!estaAutenticado) return;
-    setCarrito(prev => prev.map(item => item.id === id ? { ...item, cantidad: Math.max(1, item.cantidad - 1) } : item));//si la cantidad es menor a 1 la deja en 1 usando Math.max que hace que el valor minimo sea 1, funciona igual que aumentar pero en vez de sumar resta 1 a la cantidad.
-};
+    disminuirCantidad(id);
+  };
 
-const eliminar = (id) => {//elimina el item del carrito completamente
+  const eliminar = (id) => {
     if (!estaAutenticado) return;
-    setCarrito(prev => prev.filter(item => item.id !== id));//usa filter para crear un nuevo array sin el item cuyo id es igual al id pasado por parametro, osea que elimina el item del carrito.
-};
+    eliminarDelCarrito(id);
+    toast.info('Producto eliminado del carrito');
+  };
 
-  const total = carrito.reduce((sum, item) => sum + (Number(item.price || 0) * item.cantidad), 0);//calcula el total del carrito, reduce recorre cada item del carrito y suma el precio por la cantidad de cada item, si el precio no es un numero lo convierte a 0 usando Number(item.price || 0), el valor inicial de la suma es 0.
+  const vaciar = () => {
+    if (!estaAutenticado || carrito.length === 0) return;
+    limpiarCarrito();
+    toast.info('Carrito vaciado');
+  };
 
-if (!estaAutenticado) {
+  const total = calcularTotal();
+
+  if (!estaAutenticado) {
     return (
-    <div style={{ marginTop: 24, padding: 12, border: '1px solid #eee', borderRadius: 8 }}>
-        <strong>Inicia sesión para usar el carrito.</strong>
-    </div>
-    ); //si no esta autenticado muestra este mensaje
-}
+      <>
+        <Helmet>
+          <title>Carrito de Compras - Mi Tienda Online</title>
+        </Helmet>
+        <Container className="py-5">
+          <Card className="text-center">
+            <FaShoppingCart size={60} className="text-muted mb-3" />
+            <h4>Inicia sesión para usar el carrito</h4>
+          </Card>
+        </Container>
+      </>
+    );
+  }
 
-return ( 
-    <div style={{ marginTop: 24, padding: 12, border: '1px solid #eee', borderRadius: 8 }}>
-    <h3>Carrito</h3>
-    {carrito.length === 0 ? (
-        <div>El carrito está vacío</div>
-    ) : (//si el carrito tiene items los muestra en una lista
-        <>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-            {carrito.map(item => (
-            <li key={item.id} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 'bold' }}>{item.title}</div>
-                <div style={{ fontSize: 13, color: '#555' }}>${item.price}</div>
-                </div>
-                <div>
-                <button onClick={() => disminuir(item.id)} style={{ marginRight: 6 }}>-</button>
-                <span>{item.cantidad}</span>
-                <button onClick={() => aumentar(item.id)} style={{ marginLeft: 6 }}>+</button>
-                </div>
-                <div style={{ width: 80, textAlign: 'right' }}>${(item.price * item.cantidad).toFixed(2)}</div>
-                <div>
-                <button onClick={() => eliminar(item.id)} style={{ marginLeft: 12 }}>Eliminar</button>
-                </div>
-            </li>
-            ))}
-        </ul>
-        <div style={{ borderTop: '1px solid #eee', paddingTop: 8, marginTop: 8 }}>
-            <strong>Total: ${total.toFixed(2)}</strong>
-        </div>
-        </>
-    )}
-    </div>
-);
+  return ( 
+    <>
+      <Helmet>
+        <title>Carrito de Compras - Mi Tienda Online</title>
+        <meta name="description" content="Revisa los productos en tu carrito de compras" />
+      </Helmet>
+      
+      <Container className="py-4">
+        <SectionTitle>
+          <FaShoppingCart className="me-2" />
+          Carrito de Compras
+          {carrito.length > 0 && (
+            <Badge bg="primary" className="ms-2">{carrito.length}</Badge>
+          )}
+        </SectionTitle>
+
+        {carrito.length === 0 ? (
+          <Card className="text-center py-5">
+            <FaShoppingCart size={60} className="text-muted mb-3" />
+            <h4>Tu carrito está vacío</h4>
+            <p className="text-muted">Agrega productos para comenzar a comprar</p>
+          </Card>
+        ) : (
+          <>
+            <Card>
+              <Table responsive hover className="mb-0">
+                <thead className="table-light">
+                  <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th className="text-center">Cantidad</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {carrito.map(item => (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="d-flex align-items-center gap-3">
+                          {item.image && (
+                            <img 
+                              src={item.image} 
+                              alt={item.title}
+                              style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                            />
+                          )}
+                          <strong>{item.title}</strong>
+                        </div>
+                      </td>
+                      <td>${Number(item.price).toFixed(2)}</td>
+                      <td>
+                        <div className="d-flex align-items-center justify-content-center gap-2">
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => disminuir(item.id)}
+                          >
+                            <FaMinus />
+                          </Button>
+                          <span className="fw-bold mx-2">{item.cantidad}</span>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => aumentar(item.id)}
+                          >
+                            <FaPlus />
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="fw-bold">${(item.price * item.cantidad).toFixed(2)}</td>
+                      <td>
+                        <DangerButton 
+                          onClick={() => eliminar(item.id)}
+                          size="sm"
+                        >
+                          <FaTrash />
+                        </DangerButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Card>
+
+            <Card className="mt-4">
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h5 className="mb-0">Resumen</h5>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={vaciar}
+                >
+                  Vaciar carrito
+                </Button>
+              </div>
+              <Row className="align-items-center">
+                <Col md={8}>
+                  <h5 className="mb-0">Total a pagar:</h5>
+                </Col>
+                <Col md={4} className="text-end">
+                  <h3 className="text-primary mb-0">${total.toFixed(2)}</h3>
+                </Col>
+              </Row>
+              <Button variant="success" size="lg" className="w-100 mt-3">
+                Proceder al Pago
+              </Button>
+            </Card>
+          </>
+        )}
+      </Container>
+    </>
+  );
 };
 
 export default Carrito;
