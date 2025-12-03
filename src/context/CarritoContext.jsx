@@ -26,11 +26,24 @@ export const CarritoProvider = ({ children }) => {
 
   // Guardar carrito en localStorage cada vez que cambie
   useEffect(() => {
-    try {
-      localStorage.setItem('carrito', JSON.stringify(carrito));
-    } catch (e) {
-      console.error('Error guardando carrito:', e);
+    // Escribir en localStorage puede bloquear el hilo principal si el objeto
+    // es grande. Usamos requestIdleCallback cuando esté disponible o un
+    // pequeño debounce con setTimeout para evitar freezes al agregar items.
+    const save = () => {
+      try {
+        localStorage.setItem('carrito', JSON.stringify(carrito));
+      } catch (e) {
+        console.error('Error guardando carrito:', e);
+      }
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(save);
+      return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
     }
+
+    const timeoutId = setTimeout(save, 120);
+    return () => clearTimeout(timeoutId);
   }, [carrito]);
 
   // Agregar producto al carrito
