@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaUndo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useProductos } from '../context/ProductosContext';
-import { Card, SectionTitle, WarningButton, DangerButton, SecondaryButton } from '../styles/StyledComponents';
 
 const GestionProductos = () => {
   const navigate = useNavigate();

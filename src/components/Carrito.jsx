@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Container, Row, Col, Button, Table, Badge } from 'react-bootstrap';
 import { FaPlus, FaMinus, FaTrash, FaShoppingCart } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -7,14 +7,14 @@ import { useAuth } from '../context/AuthContext';
 import { useCarrito } from '../context/CarritoContext';
 import { Card, DangerButton, SectionTitle } from '../styles/StyledComponents';
 
-// Componente que muestra el carrito de compras usando useContext
+
 const Carrito = () => {
   const { estaAutenticado } = useAuth();
   const { carrito, aumentarCantidad, disminuirCantidad, eliminarDelCarrito, calcularTotal, limpiarCarrito } = useCarrito();
 
-  // Funciones para aumentar, disminuir y eliminar items del carrito
+
   const aumentar = (id) => {
-    if (!estaAutenticado) return; // Si no está autenticado no hace nada
+    if (!estaAutenticado) return;
     aumentarCantidad(id);
   };
 

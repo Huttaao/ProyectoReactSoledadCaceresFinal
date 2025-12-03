@@ -1,7 +1,6 @@
 import Header from './components/Header'
 import Footer from './components/Footer'
-import { Routes, Route, useNavigate } from 'react-router-dom'
-import React from 'react';
+import { Routes, Route } from 'react-router-dom'
 import { Container, Button } from 'react-bootstrap';
 import { FaSignOutAlt } from 'react-icons/fa';
 import './App.css'
@@ -20,7 +19,6 @@ import { Spinner } from './styles/StyledComponents'
 
 function AppContent() {
   const { estaAutenticado, usuario, cerrarSesion, cargando } = useAuth();
-  const navigate = useNavigate();
 
   if (cargando) {
     return (

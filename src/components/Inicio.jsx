@@ -1,4 +1,4 @@
-import React from 'react';
+import { useCallback } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaStore, FaShieldAlt, FaTruck, FaHeadset } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -12,13 +12,15 @@ const Inicio = () => {
   const { estaAutenticado } = useAuth();
   const { agregarAlCarrito } = useCarrito();
 
-  const handleAgregarAlCarrito = (producto) => {
+  const handleAgregarAlCarrito = useCallback((producto) => {
     if (!estaAutenticado) {
-      toast.warning('Debes iniciar sesión para agregar productos al carrito');
+      queueMicrotask(() => {
+        toast.warning('Debes iniciar sesión para agregar productos al carrito');
+      });
       return;
     }
     agregarAlCarrito(producto);
-  };
+  }, [estaAutenticado, agregarAlCarrito]);
 
   return (
     <>
@@ -28,7 +30,7 @@ const Inicio = () => {
         <meta name="keywords" content="tienda online, productos, ofertas, compras, e-commerce" />
       </Helmet>
 
-      {/* Hero Section */}
+      
       <div style={{ 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
         color: 'white',
@@ -49,7 +51,7 @@ const Inicio = () => {
         </Container>
       </div>
 
-      {/* Features Section */}
+      
       <Container className="py-5">
         <Row className="g-4 mb-5">
           <Col md={3} sm={6}>
@@ -83,7 +85,7 @@ const Inicio = () => {
         </Row>
       </Container>
 
-      {/* Productos */}
+      
       <Productos onAgregar={handleAgregarAlCarrito} />
     </>
   );

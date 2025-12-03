@@ -25,16 +25,16 @@ createRoot(document.getElementById('root')).render(
         </AuthProvider>
         <ToastContainer
           position="top-right"
-          autoClose={8000}
+          autoClose={2000}
           hideProgressBar={false}
           newestOnTop
-          closeOnClick={false}
+          closeOnClick={true}
           rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
+          pauseOnFocusLoss={false}
+          draggable={false}
+          pauseOnHover={false}
           theme="colored"
-          limit={3}
+          limit={2}
           closeButton={false}
         />
       </BrowserRouter>

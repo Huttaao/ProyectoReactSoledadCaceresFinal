@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Container, Form, Alert, Card } from 'react-bootstrap';
-import { FaUser, FaLock, FaSignInAlt, FaTimes } from 'react-icons/fa';
+import { FaUser, FaLock, FaSignInAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../context/AuthContext';
-import { StyledInput, PrimaryButton, SecondaryButton } from '../styles/StyledComponents';
+import { PrimaryButton, SecondaryButton } from '../styles/StyledComponents';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -18,10 +18,10 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Obtener la ruta desde donde se redirigió al login
+  
   const from = location.state?.from?.pathname || '/';
 
-  // Si ya está autenticado, redirigir
+  
   useEffect(() => {
     if (estaAutenticado) {
       navigate(from, { replace: true });
@@ -33,20 +33,20 @@ const Login = () => {
     setError('');
     setCargando(true);
 
-    // Validación básica
+    
     if (!username.trim() || !password.trim()) {
       setError('Por favor, completa todos los campos');
       setCargando(false);
       return;
     }
 
-    // Simular delay de red para hacer más realista
+    
     setTimeout(() => {
       const resultado = iniciarSesion(username, password);
       
       if (resultado.success) {
         toast.success('¡Inicio de sesión exitoso!');
-        // Redirigir a la página de donde venía o al inicio
+        
         navigate(from, { replace: true });
       } else {
         setError(resultado.mensaje);

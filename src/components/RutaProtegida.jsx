@@ -5,7 +5,7 @@ const RutaProtegida = ({ children, rolesPermitidos = [] }) => {
   const { estaAutenticado, usuario, cargando } = useAuth();
   const location = useLocation();
 
-  // Mostrar loading mientras se verifica la autenticación
+
   if (cargando) {
     return (
       <div style={{ 
@@ -21,13 +21,13 @@ const RutaProtegida = ({ children, rolesPermitidos = [] }) => {
     );
   }
 
-  // Si no está autenticado, redirigir al login
+
   if (!estaAutenticado) {
-    // Guardar la ubicación actual para redirigir después del login
+
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Si se especificaron roles permitidos, verificar el rol del usuario
+
   if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(usuario?.rol)) {
     return (
       <div style={{ 
@@ -51,7 +51,7 @@ const RutaProtegida = ({ children, rolesPermitidos = [] }) => {
     );
   }
   
-  // Usuario autenticado y con permisos correctos
+
   return children;
 };
 

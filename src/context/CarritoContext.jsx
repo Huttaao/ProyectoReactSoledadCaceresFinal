@@ -1,9 +1,9 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 
-// Crear el contexto del carrito
+
 const CarritoContext = createContext();
 
-// Hook personalizado para usar el contexto del carrito
+
 export const useCarrito = () => {
   const context = useContext(CarritoContext);
   if (!context) {
@@ -12,9 +12,9 @@ export const useCarrito = () => {
   return context;
 };
 
-// Provider del contexto del carrito
+
 export const CarritoProvider = ({ children }) => {
-  // Estado del carrito inicializado desde localStorage
+  
   const [carrito, setCarrito] = useState(() => {
     try {
       const raw = localStorage.getItem('carrito');
@@ -24,11 +24,9 @@ export const CarritoProvider = ({ children }) => {
     }
   });
 
-  // Guardar carrito en localStorage cada vez que cambie
+  
   useEffect(() => {
-    // Escribir en localStorage puede bloquear el hilo principal si el objeto
-    // es grande. Usamos requestIdleCallback cuando esté disponible o un
-    // pequeño debounce con setTimeout para evitar freezes al agregar items.
+    
     const save = () => {
       try {
         localStorage.setItem('carrito', JSON.stringify(carrito));
@@ -46,7 +44,7 @@ export const CarritoProvider = ({ children }) => {
     return () => clearTimeout(timeoutId);
   }, [carrito]);
 
-  // Agregar producto al carrito
+  
   const agregarAlCarrito = (producto) => {
     try {
       setCarrito(prev => {
@@ -75,7 +73,7 @@ export const CarritoProvider = ({ children }) => {
     }
   };
 
-  // Aumentar cantidad de un producto
+  
   const aumentarCantidad = (id) => {
     setCarrito(prev => 
       prev.map(item => 
@@ -86,7 +84,7 @@ export const CarritoProvider = ({ children }) => {
     );
   };
 
-  // Disminuir cantidad de un producto
+  
   const disminuirCantidad = (id) => {
     setCarrito(prev => 
       prev.map(item => 
@@ -97,17 +95,17 @@ export const CarritoProvider = ({ children }) => {
     );
   };
 
-  // Eliminar producto del carrito
+  
   const eliminarDelCarrito = (id) => {
     setCarrito(prev => prev.filter(item => item.id !== id));
   };
 
-  // Calcular total del carrito
+  
   const calcularTotal = () => {
     return carrito.reduce((sum, item) => sum + (Number(item.price || 0) * item.cantidad), 0);
   };
 
-  // Limpiar carrito
+  
   const limpiarCarrito = () => {
     setCarrito([]);
   };

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Form, Alert } from 'react-bootstrap';
 import { FaSave, FaTimes, FaEdit } from 'react-icons/fa';
 import { Helmet } from 'react-helmet-async';
 import { useProductos } from '../context/ProductosContext';
@@ -13,7 +13,7 @@ const EditarProducto = () => {
   const { productos, actualizarProducto } = useProductos();
   const { estaAutenticado, usuario } = useAuth();
 
-  // Estado del formulario
+  
   const [formData, setFormData] = useState({
     title: '',
     price: '',
@@ -22,15 +22,15 @@ const EditarProducto = () => {
     image: ''
   });
 
-  // Estado para errores de validación
+
   const [errores, setErrores] = useState({});
   
-  // Estado para el envío del formulario
+
   const [enviando, setEnviando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
-  // Categorías disponibles
+
   const categorias = [
     'electronics',
     'jewelery',
@@ -42,12 +42,12 @@ const EditarProducto = () => {
     'home'
   ];
 
-  // Cargar datos del producto
+
   useEffect(() => {
     const cargarProducto = async () => {
       setCargando(true);
       
-      // Buscar en productos cargados
+
       const productoLocal = productos.find(p => p.id === parseInt(id));
       
       if (productoLocal) {
@@ -62,7 +62,7 @@ const EditarProducto = () => {
         return;
       }
 
-      // Si no está en el contexto, cargar desde API
+
       try {
         const res = await fetch(`https://fakestoreapi.com/products/${id}`);
         if (!res.ok) throw new Error('Producto no encontrado');
@@ -90,7 +90,7 @@ const EditarProducto = () => {
     }
   }, [id, productos]);
 
-  // Manejar cambios en los inputs
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -98,7 +98,7 @@ const EditarProducto = () => {
       [name]: value
     }));
     
-    // Limpiar error del campo cuando el usuario empieza a escribir
+
     if (errores[name]) {
       setErrores(prev => ({
         ...prev,
@@ -107,11 +107,11 @@ const EditarProducto = () => {
     }
   };
 
-  // Validar el formulario
+
   const validarFormulario = () => {
     const nuevosErrores = {};
 
-    // Validar título
+
     if (!formData.title.trim()) {
       nuevosErrores.title = 'El título es obligatorio';
     } else if (formData.title.trim().length < 3) {
@@ -120,7 +120,6 @@ const EditarProducto = () => {
       nuevosErrores.title = 'El título no puede exceder 100 caracteres';
     }
 
-    // Validar precio
     if (!formData.price) {
       nuevosErrores.price = 'El precio es obligatorio';
     } else if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
@@ -129,7 +128,7 @@ const EditarProducto = () => {
       nuevosErrores.price = 'El precio es demasiado alto';
     }
 
-    // Validar descripción
+
     if (!formData.description.trim()) {
       nuevosErrores.description = 'La descripción es obligatoria';
     } else if (formData.description.trim().length < 10) {
@@ -138,12 +137,12 @@ const EditarProducto = () => {
       nuevosErrores.description = 'La descripción no puede exceder 500 caracteres';
     }
 
-    // Validar categoría
+
     if (!formData.category) {
       nuevosErrores.category = 'Debes seleccionar una categoría';
     }
 
-    // Validar URL de imagen
+
     if (!formData.image.trim()) {
       nuevosErrores.image = 'La URL de la imagen es obligatoria';
     } else if (!isValidURL(formData.image)) {
@@ -154,7 +153,6 @@ const EditarProducto = () => {
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  // Validar URL
   const isValidURL = (string) => {
     try {
       new URL(string);
@@ -164,12 +162,12 @@ const EditarProducto = () => {
     }
   };
 
-  // Manejar el envío del formulario
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje({ tipo: '', texto: '' });
 
-    // Validar formulario
+
     if (!validarFormulario()) {
       setMensaje({ 
         tipo: 'error', 
@@ -180,7 +178,7 @@ const EditarProducto = () => {
 
     setEnviando(true);
 
-    // Preparar datos del producto
+
     const productoActualizado = {
       title: formData.title.trim(),
       price: parseFloat(formData.price),
@@ -189,7 +187,7 @@ const EditarProducto = () => {
       image: formData.image.trim()
     };
 
-    // Enviar a la API
+
     const resultado = await actualizarProducto(parseInt(id), productoActualizado);
 
     setEnviando(false);
@@ -200,7 +198,7 @@ const EditarProducto = () => {
         texto: resultado.mensaje 
       });
 
-      // Redirigir después de 2 segundos
+
       setTimeout(() => {
         navigate('/');
       }, 2000);
@@ -212,7 +210,7 @@ const EditarProducto = () => {
     }
   };
 
-  // Verificar autenticación y rol
+
   if (!estaAutenticado) {
     return (
       <>
@@ -291,7 +289,7 @@ const EditarProducto = () => {
 
         <Card>
           <Form onSubmit={handleSubmit}>
-            {/* Título */}
+
             <Form.Group className="mb-3">
               <Form.Label>Título del Producto <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -309,7 +307,7 @@ const EditarProducto = () => {
               </Form.Text>
             </Form.Group>
 
-            {/* Precio */}
+
             <Form.Group className="mb-3">
               <Form.Label>Precio (USD) <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -326,7 +324,7 @@ const EditarProducto = () => {
               {errores.price && <ErrorMessage>{errores.price}</ErrorMessage>}
             </Form.Group>
 
-            {/* Categoría */}
+
             <Form.Group className="mb-3">
               <Form.Label>Categoría <span className="text-danger">*</span></Form.Label>
               <Form.Select
@@ -344,7 +342,7 @@ const EditarProducto = () => {
               {errores.category && <ErrorMessage>{errores.category}</ErrorMessage>}
             </Form.Group>
 
-            {/* Descripción */}
+
             <Form.Group className="mb-3">
               <Form.Label>Descripción <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -363,7 +361,7 @@ const EditarProducto = () => {
               </Form.Text>
             </Form.Group>
 
-            {/* URL de imagen */}
+
             <Form.Group className="mb-3">
               <Form.Label>URL de la Imagen <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -388,7 +386,7 @@ const EditarProducto = () => {
               )}
             </Form.Group>
 
-            {/* Botones */}
+
             <div className="d-flex gap-2 mt-4">
               <PrimaryButton type="submit" disabled={enviando} className="flex-fill">
                 <FaSave className="me-2" />
@@ -402,7 +400,7 @@ const EditarProducto = () => {
           </Form>
         </Card>
 
-        {/* Información adicional */}
+
         <Alert variant="info" className="mt-4">
           <strong>Información:</strong>
           <ul className="mt-2 mb-0">

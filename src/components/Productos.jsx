@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Button, Form, InputGroup, Pagination, Modal } from 'react-bootstrap';
 import { FaShoppingCart, FaEdit, FaTrash, FaPlus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -33,11 +33,10 @@ const [busqueda, setBusqueda] = useState('');
 const [mostrarModal, setMostrarModal] = useState(false);
 const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
-// Paginación
-const [paginaActual, setPaginaActual] = useState(1);
-const productosPorPagina = 8; // Mobile-first: menos productos por página
 
-// Filtrar productos según la búsqueda
+const [paginaActual, setPaginaActual] = useState(1);
+const productosPorPagina = 8; 
+
 const productosFiltrados = useMemo(() => {
   return productos.filter(p => 
     p.title.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -45,39 +44,42 @@ const productosFiltrados = useMemo(() => {
   );
 }, [productos, busqueda]);
 
-// Calcular paginación
+
 const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
 const indiceInicio = (paginaActual - 1) * productosPorPagina;
 const indiceFin = indiceInicio + productosPorPagina;
 const productosActuales = productosFiltrados.slice(indiceInicio, indiceFin);
 
-// Reset página al buscar
-React.useEffect(() => {
+useEffect(() => {
   setPaginaActual(1);
 }, [busqueda]);
 
-const handleCantidadChange = (id, value) => {
+const handleCantidadChange = useCallback((id, value) => {
     const num = Math.max(1, parseInt(value || '1', 10) || 1);
     setCantidades(prev => ({ ...prev, [id]: num }));
-};
+}, []);
 
-const handleAgregar = (producto) => {
+const handleAgregar = useCallback((producto) => {
     const qty = cantidades[producto.id] || 1;
     if (typeof onAgregar === 'function') onAgregar({ ...producto, cantidad: qty });
-};
+    
+    queueMicrotask(() => {
+      toast.success('🛒 Producto agregado al carrito');
+    });
+}, [cantidades, onAgregar]);
 
-const handleAbrirModal = (producto) => {
+const handleAbrirModal = useCallback((producto) => {
     setProductoSeleccionado(producto);
     setMostrarModal(true);
-};
+}, []);
 
-const handleCancelarEliminacion = () => {
+const handleCancelarEliminacion = useCallback(() => {
     setMostrarModal(false);
     setProductoSeleccionado(null);
     setEliminando(null);
-};
+}, []);
 
-const handleConfirmarEliminacion = async () => {
+const handleConfirmarEliminacion = useCallback(async () => {
     if (!productoSeleccionado) return;
     const { id } = productoSeleccionado;
     setEliminando(id);
@@ -92,7 +94,7 @@ const handleConfirmarEliminacion = async () => {
     setEliminando(null);
     setMostrarModal(false);
     setProductoSeleccionado(null);
-};
+}, [productoSeleccionado, eliminarProducto]);
 
 if (loading) {
     return (
@@ -219,10 +221,7 @@ return (
                   <Button 
                     variant="success"
                     size="sm"
-                    onClick={() => {
-                      handleAgregar(p);
-                      toast.success('🛒 Producto agregado al carrito');
-                    }}
+                    onClick={() => handleAgregar(p)}
                     style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
                   >
                     <FaShoppingCart className="d-md-inline d-none" /> 
@@ -263,7 +262,7 @@ return (
           ))}
         </Grid>
 
-        {/* Paginación */}
+        
         {totalPaginas > 1 && (
           <div className="d-flex justify-content-center mt-4">
             <Pagination className="flex-wrap">
@@ -274,10 +273,10 @@ return (
                 <FaChevronLeft /> Anterior
               </Pagination.Prev>
               
-              {/* Mostrar números de página - responsive */}
+              
               {[...Array(totalPaginas)].map((_, index) => {
                 const numeroPagina = index + 1;
-                // En móvil, mostrar solo página actual y adyacentes
+                
                 const mostrarEnMovil = window.innerWidth < 768 
                   ? Math.abs(numeroPagina - paginaActual) <= 1
                   : true;

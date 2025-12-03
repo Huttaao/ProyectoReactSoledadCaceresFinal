@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Alert, Badge } from 'react-bootstrap';
 import { FaArrowLeft, FaStar, FaShoppingCart, FaTag } from 'react-icons/fa';
@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-toastify';
 import { useProductos } from '../context/ProductosContext';
 import { useCarrito } from '../context/CarritoContext';
-import { Card, PageTitle, ProductImage, ProductPrice, PrimaryButton, SecondaryButton, Spinner } from '../styles/StyledComponents';
+import { Card, ProductImage, ProductPrice, PrimaryButton, SecondaryButton, Spinner } from '../styles/StyledComponents';
 
 const DetalleProducto = () => {
   const { id } = useParams();
@@ -32,7 +32,7 @@ const DetalleProducto = () => {
       setError(null);
       
       try {
-        // Primero buscar en el contexto (productos ya cargados)
+        
         const productoLocal = productos.find(p => p.id === parseInt(id));
         
         if (productoLocal) {
@@ -41,7 +41,7 @@ const DetalleProducto = () => {
           return;
         }
 
-        // Si no está en el contexto, buscar en la API
+        
         const res = await fetch(`https://fakestoreapi.com/products/${id}`, { 
           signal: controller.signal 
         });
@@ -50,7 +50,7 @@ const DetalleProducto = () => {
           throw new Error(`Error en la respuesta (${res.status})`);
         }
 
-        // Verificar que hay contenido antes de parsear JSON
+        
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           throw new Error('La respuesta no es JSON válido');
@@ -128,15 +128,18 @@ const DetalleProducto = () => {
     );
   }
 
-  const handleAgregarAlCarrito = () => {
+  const handleAgregarAlCarrito = useCallback(() => {
     const productoConCantidad = {
       ...producto,
       cantidad: cantidad
     };
     agregarAlCarrito(productoConCantidad);
-    toast.success(`${cantidad} ${cantidad === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
-    setTimeout(() => navigate('/carrito'), 1500);
-  };
+    
+    queueMicrotask(() => {
+      toast.success(`${cantidad} ${cantidad === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
+      setTimeout(() => navigate('/carrito'), 1500);
+    });
+  }, [producto, cantidad, agregarAlCarrito, navigate]);
 
   return (
     <>

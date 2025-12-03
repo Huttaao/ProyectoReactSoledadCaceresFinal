@@ -1,9 +1,9 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 
-// Crear el contexto de productos
+
 const ProductosContext = createContext();
 
-// Hook personalizado para usar el contexto de productos
+
 export const useProductos = () => {
   const context = useContext(ProductosContext);
   if (!context) {
@@ -12,14 +12,13 @@ export const useProductos = () => {
   return context;
 };
 
-// URL de MockAPI - Puedes crear tu propia MockAPI en https://mockapi.io/
-// Por ahora usaremos la FakeStoreAPI como fallback y simularemos el POST
+
 const MOCKAPI_URL = 'https://fakestoreapi.com/products';
 
-// Provider del contexto de productos
+
 export const ProductosProvider = ({ children }) => {
   const [productos, setProductos] = useState(() => {
-    // Cargar productos del localStorage al iniciar
+    
     try {
       const productosGuardados = localStorage.getItem('productos');
       return productosGuardados ? JSON.parse(productosGuardados) : [];
@@ -30,25 +29,36 @@ export const ProductosProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Guardar productos en localStorage cada vez que cambien
+  
   useEffect(() => {
-    if (productos.length > 0) {
+    if (productos.length === 0) return;
+    
+    const save = () => {
       try {
         localStorage.setItem('productos', JSON.stringify(productos));
       } catch (e) {
         console.error('Error guardando productos:', e);
       }
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(save);
+      return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
     }
+
+    const timeoutId = setTimeout(save, 200);
+    return () => clearTimeout(timeoutId);
   }, [productos]);
 
-  // Cargar productos al inicio solo si no hay en localStorage
+  
   useEffect(() => {
     if (productos.length === 0) {
       cargarProductos();
     }
+    
   }, []);
 
-  // Función para cargar productos desde la API
+  
   const cargarProductos = async () => {
     setLoading(true);
     setError(null);
@@ -67,10 +77,10 @@ export const ProductosProvider = ({ children }) => {
     }
   };
 
-  // Función para agregar un nuevo producto
+  
   const agregarProducto = async (nuevoProducto) => {
     try {
-      // Hacer POST a la API
+      
       const res = await fetch(MOCKAPI_URL, {
         method: 'POST',
         headers: {
@@ -83,7 +93,7 @@ export const ProductosProvider = ({ children }) => {
       
       const productoCreado = await res.json();
       
-      // Agregar el producto al estado local
+      
       setProductos(prev => [productoCreado, ...prev]);
       
       return { success: true, mensaje: 'Producto agregado exitosamente', producto: productoCreado };
@@ -93,7 +103,7 @@ export const ProductosProvider = ({ children }) => {
     }
   };
 
-  // Función para actualizar un producto
+  
   const actualizarProducto = async (id, datosActualizados) => {
     try {
       const res = await fetch(`${MOCKAPI_URL}/${id}`, {
@@ -108,7 +118,7 @@ export const ProductosProvider = ({ children }) => {
       
       const productoActualizado = await res.json();
       
-      // Actualizar el producto en el estado local
+      
       setProductos(prev => 
         prev.map(p => p.id === id ? productoActualizado : p)
       );
@@ -120,7 +130,7 @@ export const ProductosProvider = ({ children }) => {
     }
   };
 
-  // Función para eliminar un producto
+  
   const eliminarProducto = async (id) => {
     try {
       const res = await fetch(`${MOCKAPI_URL}/${id}`, {
@@ -129,7 +139,7 @@ export const ProductosProvider = ({ children }) => {
 
       if (!res.ok) throw new Error(`Error al eliminar producto (${res.status})`);
       
-      // Eliminar el producto del estado local
+      
       setProductos(prev => prev.filter(p => p.id !== id));
       
       return { success: true, mensaje: 'Producto eliminado exitosamente' };

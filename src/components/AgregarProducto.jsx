@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Form, Alert } from 'react-bootstrap';
 import { FaSave, FaTimes, FaImage } from 'react-icons/fa';
@@ -13,7 +13,7 @@ const AgregarProducto = () => {
   const { agregarProducto } = useProductos();
   const { estaAutenticado, usuario } = useAuth();
 
-  // Estado del formulario
+
   const [formData, setFormData] = useState({
     title: '',
     price: '',
@@ -22,14 +22,14 @@ const AgregarProducto = () => {
     image: ''
   });
 
-  // Estado para errores de validación
+
   const [errores, setErrores] = useState({});
   
-  // Estado para el envío del formulario
+
   const [enviando, setEnviando] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
-  // Categorías disponibles
+
   const categorias = [
     'electronics',
     'jewelery',
@@ -41,7 +41,7 @@ const AgregarProducto = () => {
     'home'
   ];
 
-  // Manejar cambios en los inputs
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -49,7 +49,7 @@ const AgregarProducto = () => {
       [name]: value
     }));
     
-    // Limpiar error del campo cuando el usuario empieza a escribir
+
     if (errores[name]) {
       setErrores(prev => ({
         ...prev,
@@ -58,11 +58,11 @@ const AgregarProducto = () => {
     }
   };
 
-  // Validar el formulario
+
   const validarFormulario = () => {
     const nuevosErrores = {};
 
-    // Validar título
+
     if (!formData.title.trim()) {
       nuevosErrores.title = 'El título es obligatorio';
     } else if (formData.title.trim().length < 3) {
@@ -71,7 +71,7 @@ const AgregarProducto = () => {
       nuevosErrores.title = 'El título no puede exceder 100 caracteres';
     }
 
-    // Validar precio
+
     if (!formData.price) {
       nuevosErrores.price = 'El precio es obligatorio';
     } else if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
@@ -80,7 +80,7 @@ const AgregarProducto = () => {
       nuevosErrores.price = 'El precio es demasiado alto';
     }
 
-    // Validar descripción
+
     if (!formData.description.trim()) {
       nuevosErrores.description = 'La descripción es obligatoria';
     } else if (formData.description.trim().length < 10) {
@@ -89,12 +89,12 @@ const AgregarProducto = () => {
       nuevosErrores.description = 'La descripción no puede exceder 500 caracteres';
     }
 
-    // Validar categoría
+
     if (!formData.category) {
       nuevosErrores.category = 'Debes seleccionar una categoría';
     }
 
-    // Validar URL de imagen
+
     if (!formData.image.trim()) {
       nuevosErrores.image = 'La URL de la imagen es obligatoria';
     } else if (!isValidURL(formData.image)) {
@@ -105,7 +105,7 @@ const AgregarProducto = () => {
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  // Validar URL
+
   const isValidURL = (string) => {
     try {
       new URL(string);
@@ -115,12 +115,12 @@ const AgregarProducto = () => {
     }
   };
 
-  // Manejar el envío del formulario
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje({ tipo: '', texto: '' });
 
-    // Validar formulario
+
     if (!validarFormulario()) {
       setMensaje({ tipo: 'danger', texto: 'Por favor corrige los errores en el formulario' });
       toast.error('Por favor corrige los errores en el formulario');
@@ -129,7 +129,7 @@ const AgregarProducto = () => {
 
     setEnviando(true);
 
-    // Preparar datos del producto
+
     const nuevoProducto = {
       title: formData.title.trim(),
       price: parseFloat(formData.price),
@@ -138,7 +138,7 @@ const AgregarProducto = () => {
       image: formData.image.trim()
     };
 
-    // Enviar a la API
+
     const resultado = await agregarProducto(nuevoProducto);
 
     setEnviando(false);
@@ -147,7 +147,7 @@ const AgregarProducto = () => {
       setMensaje({ tipo: 'success', texto: resultado.mensaje });
       toast.success(resultado.mensaje);
       
-      // Limpiar formulario
+
       setFormData({
         title: '',
         price: '',
@@ -156,7 +156,7 @@ const AgregarProducto = () => {
         image: ''
       });
 
-      // Redirigir después de 2 segundos
+
       setTimeout(() => {
         navigate('/');
       }, 2000);
@@ -166,7 +166,7 @@ const AgregarProducto = () => {
     }
   };
 
-  // Restablecer formulario
+
   const handleReset = () => {
     setFormData({
       title: '',
@@ -179,7 +179,7 @@ const AgregarProducto = () => {
     setMensaje({ tipo: '', texto: '' });
   };
 
-  // Verificar autenticación y rol
+
   if (!estaAutenticado) {
     return (
       <>
@@ -262,7 +262,7 @@ const AgregarProducto = () => {
               </Form.Text>
             </Form.Group>
 
-            {/* Precio */}
+
             <Form.Group className="mb-3">
               <Form.Label>Precio (USD) <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -279,7 +279,7 @@ const AgregarProducto = () => {
               {errores.price && <ErrorMessage>{errores.price}</ErrorMessage>}
             </Form.Group>
 
-            {/* Categoría */}
+
             <Form.Group className="mb-3">
               <Form.Label>Categoría <span className="text-danger">*</span></Form.Label>
               <Form.Select
@@ -297,7 +297,7 @@ const AgregarProducto = () => {
               {errores.category && <ErrorMessage>{errores.category}</ErrorMessage>}
             </Form.Group>
 
-            {/* Descripción */}
+
             <Form.Group className="mb-3">
               <Form.Label>Descripción <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -316,7 +316,7 @@ const AgregarProducto = () => {
               </Form.Text>
             </Form.Group>
 
-            {/* URL de imagen */}
+
             <Form.Group className="mb-3">
               <Form.Label>URL de la Imagen <span className="text-danger">*</span></Form.Label>
               <Form.Control
@@ -341,7 +341,7 @@ const AgregarProducto = () => {
               )}
             </Form.Group>
 
-            {/* Botones */}
+
             <div className="d-flex gap-2 mt-4">
               <SuccessButton type="submit" disabled={enviando} className="flex-fill">
                 <FaSave className="me-2" />
@@ -359,7 +359,7 @@ const AgregarProducto = () => {
           </Form>
         </Card>
 
-        {/* Información adicional */}
+
         <Alert variant="info" className="mt-4">
           <strong>Información:</strong>
           <ul className="mt-2 mb-0">

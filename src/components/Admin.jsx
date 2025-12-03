@@ -30,7 +30,7 @@ const Admin = () => {
         </PageTitle>
 
         <Row className="g-4">
-          {/* Información del usuario */}
+
           <Col lg={6}>
             <Card>
               <h4 className="mb-3">
@@ -54,7 +54,7 @@ const Admin = () => {
             </Card>
           </Col>
 
-          {/* Resumen del carrito */}
+
           <Col lg={6}>
             <Card>
               <h4 className="mb-3">
@@ -83,7 +83,7 @@ const Admin = () => {
             </Card>
           </Col>
 
-          {/* Token de sesión */}
+
           <Col xs={12}>
             <Card>
               <h4 className="mb-3">
@@ -111,12 +111,12 @@ const Admin = () => {
           </Col>
         </Row>
 
-        {/* Gestión de Productos - Solo para Admin */}
+
         {usuario?.rol === 'admin' && (
           <GestionProductos />
         )}
 
-        {/* Información adicional */}
+
         <Alert variant="warning" className="mt-4 text-center">
           <Alert.Heading className="h5">
             <FaShieldAlt className="me-2" />
